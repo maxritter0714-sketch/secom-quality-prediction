@@ -18,7 +18,7 @@ MODEL_NAMES: tuple[ModelName, ...] = ("dummy", "logreg")
 def make_classifier(
     name: ModelName, imbalance: ImbalanceStrategy = "weighted", **params: Any
 ) -> ClassifierMixin:
-    """Create a classifier with a fixed seed; weights are computed per fit from the fold's labels."""
+    """Create a seeded classifier; class weights are derived per fit from the fold's labels."""
     class_weight = "balanced" if imbalance == "weighted" else None
     if name == "dummy":
         return DummyClassifier(strategy="prior", **params)
