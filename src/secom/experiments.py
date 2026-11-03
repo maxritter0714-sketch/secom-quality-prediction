@@ -259,3 +259,29 @@ def select_best_tree_variant(variants: list[Variant]) -> Variant:
         variant for variant in variants if variant.label.startswith(("random_forest", "lightgbm"))
     ]
     return max(trees, key=lambda variant: variant.cv.mean_pr_auc)
+
+
+def _with_interval(estimate: pd.Series, low: pd.Series, high: pd.Series) -> list[str]:
+    return [f"{e:.3f} [{lo:.3f}, {hi:.3f}]" for e, lo, hi in zip(estimate, low, high, strict=True)]
+
+
+def holdout_summary(table: pd.DataFrame) -> pd.DataFrame:
+    """Condense the hold-out table to the columns that fit a README, with intervals inline."""
+    return pd.DataFrame(
+        {
+            "Model": table["model"],
+            "PR-AUC (CV)": table["cv_pr_auc"].map("{:.3f}".format),
+            "PR-AUC (hold-out, 95% CI)": _with_interval(
+                table["test_pr_auc"], table["test_pr_auc_ci_low"], table["test_pr_auc_ci_high"]
+            ),
+            "ROC-AUC": table["roc_auc"].map("{:.3f}".format),
+            "Recall at precision >= 0.5": table["recall_at_precision_0.5"].map("{:.3f}".format),
+            "Balanced accuracy": table["balanced_accuracy"].map("{:.3f}".format),
+            "Cost per unit (95% CI)": _with_interval(
+                table["cost_per_unit"], table["cost_ci_low"], table["cost_ci_high"]
+            ),
+            "TP / FP / FN / TN": [
+                f"{row.tp} / {row.fp} / {row.fn} / {row.tn}" for row in table.itertuples()
+            ],
+        }
+    )

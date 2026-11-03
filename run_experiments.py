@@ -24,6 +24,7 @@ from secom.experiments import (
     build_variants,
     compare_candidates,
     evaluate_holdout,
+    holdout_summary,
     reference_costs,
     run_detectors,
     select_best_tree_variant,
@@ -163,6 +164,7 @@ def run_holdout_stage(
     test_features, test_labels = test
     result = evaluate_holdout(outcome.variants, outcome.detectors, train, test)
     report.add_table("Hold-out results", "holdout", result.table)
+    report.sections["Hold-out summary"] = markdown_table(holdout_summary(result.table))
     report.add_table("Reference costs", "reference_costs", reference_costs(test_labels))
 
     labels = test_labels.to_numpy()
