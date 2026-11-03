@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "secom"
+version = "0.1.0"
+description = "Leakage-free quality prediction and anomaly detection on SECOM manufacturing data"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [{ name = "Max Ritter" }]
+dependencies = [
+    "imbalanced-learn>=0.12",
+    "lightgbm>=4.3",
+    "matplotlib>=3.8",
+    "numpy>=1.26",
+    "optuna>=3.6",
+    "pandas>=2.2",
+    "scikit-learn>=1.5",
+    "shap>=0.46",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ipykernel>=6.29",
+    "nbconvert>=7.16",
+    "pytest>=8.2",
+    "ruff>=0.6",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src"]
+extend-include = ["*.ipynb"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "C4", "PTH"]
