@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 import optuna  # noqa: E402
 import pandas as pd  # noqa: E402
+import shap  # noqa: E402
 from matplotlib.axes import Axes  # noqa: E402
 from matplotlib.figure import Figure  # noqa: E402
 from sklearn.metrics import average_precision_score, precision_recall_curve  # noqa: E402
@@ -254,7 +255,7 @@ def plot_optuna_history(studies: dict[str, optuna.Study]) -> Figure:
         axis.plot(numbers, np.maximum.accumulate(values), color=GOOD_COLOR, label="Best so far")
         axis.set(title=name, xlabel="Trial")
     np.atleast_1d(axes)[0].set_ylabel("Mean PR-AUC, temporal folds")
-    np.atleast_1d(axes)[0].legend(loc="lower right")
+    np.atleast_1d(axes)[0].legend(loc="upper right")
     return figure
 
 
@@ -271,4 +272,27 @@ def plot_optuna_importance(studies: dict[str, optuna.Study], n_params: int = 6) 
         axis.barh([key for key, _ in top], [value for _, value in top], color=GOOD_COLOR)
         axis.grid(axis="y", visible=False)
         axis.set(title=name, xlabel="Importance")
+    return figure
+
+
+def plot_shap_summary(values: np.ndarray, features: pd.DataFrame, model_label: str) -> Figure:
+    """Draw the SHAP summary plot for the hold-out units."""
+    shap.summary_plot(values, features, max_display=15, show=False, plot_size=(8, 5.5))
+    figure = plt.gcf()
+    figure.axes[0].set_title(f"SHAP summary on the hold-out: {model_label}")
+    return figure
+
+
+def plot_shap_cases(cases: dict[str, pd.DataFrame]) -> Figure:
+    """Show signed SHAP contributions for individual units, one panel each."""
+    figure, axes = plt.subplots(
+        1, len(cases), figsize=(5 * len(cases), 3.6), constrained_layout=True
+    )
+    for axis, (title, table) in zip(np.atleast_1d(axes), cases.items(), strict=True):
+        ordered = table.iloc[::-1]
+        colors = [FAIL_COLOR if value > 0 else GOOD_COLOR for value in ordered["shap"]]
+        axis.barh(ordered["feature"], ordered["shap"], color=colors, height=0.6)
+        axis.axvline(0, color=MUTED_INK, linewidth=1)
+        axis.grid(axis="y", visible=False)
+        axis.set(title=title, xlabel="SHAP value (positive pushes toward fail)")
     return figure
