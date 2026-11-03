@@ -8,10 +8,14 @@ from secom.validation import cross_validate, repeated_stratified_folds, time_ser
 
 Candidate = tuple[ModelName, ImbalanceStrategy]
 
-BASELINE_CANDIDATES: tuple[Candidate, ...] = (
+IMBALANCE_STRATEGIES: tuple[ImbalanceStrategy, ...] = ("none", "weighted", "smote")
+CANDIDATES: tuple[Candidate, ...] = (
     ("dummy", "none"),
-    ("logreg", "none"),
-    ("logreg", "weighted"),
+    *(
+        (model, strategy)
+        for model in ("logreg", "random_forest", "lightgbm")
+        for strategy in IMBALANCE_STRATEGIES
+    ),
 )
 
 
