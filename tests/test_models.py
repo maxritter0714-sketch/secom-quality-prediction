@@ -37,7 +37,7 @@ def test_unknown_model_is_rejected() -> None:
 
 
 def test_smote_strategy_enables_oversampling_and_disables_weights() -> None:
-    assert default_preprocessing("logreg", "smote").use_smote
+    assert default_preprocessing("lightgbm", "smote").use_smote
     assert make_classifier("logreg", "smote").class_weight is None
 
 
