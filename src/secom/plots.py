@@ -7,11 +7,14 @@ import matplotlib
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt  # noqa: E402
+import numpy as np  # noqa: E402
+import optuna  # noqa: E402
 import pandas as pd  # noqa: E402
 from matplotlib.axes import Axes  # noqa: E402
 from matplotlib.figure import Figure  # noqa: E402
+from sklearn.metrics import average_precision_score, precision_recall_curve  # noqa: E402
 
-from secom.config import FIGURES_DIR  # noqa: E402
+from secom.config import FIGURES_DIR, SEED  # noqa: E402
 
 SERIES = ("#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#6250d6", "#e34948")
 GOOD_COLOR = SERIES[0]
@@ -174,5 +177,98 @@ def plot_candidate_comparison(comparison: pd.DataFrame) -> Figure:
     axis.set_yticks(list(positions), labels)
     axis.grid(axis="y", visible=False)
     axis.set(title="Mean PR-AUC in cross-validation (training period)", xlabel="PR-AUC")
-    axis.legend(loc="lower right")
+    axis.legend(loc="lower right", bbox_to_anchor=(1, 1), ncols=2)
+    return figure
+
+
+def plot_pr_curves(curves: dict[str, tuple[np.ndarray, np.ndarray]], title: str) -> Figure:
+    """Draw one precision-recall curve per model against the no-skill prevalence line."""
+    figure, axis = plt.subplots(figsize=(7, 5), constrained_layout=True)
+    for (label, (labels, scores)), color in zip(curves.items(), SERIES, strict=False):
+        precision, recall, _ = precision_recall_curve(labels, scores)
+        average_precision = average_precision_score(labels, scores)
+        axis.step(
+            recall,
+            precision,
+            where="post",
+            color=color,
+            label=f"{label}, AP = {average_precision:.3f}",
+        )
+    prevalence = next(iter(curves.values()))[0].mean()
+    axis.axhline(prevalence, color=MUTED_INK, linewidth=1, linestyle="--")
+    axis.annotate(
+        f"no skill = {prevalence:.3f}",
+        xy=(1, prevalence),
+        xytext=(0, 4),
+        textcoords="offset points",
+        ha="right",
+        color=MUTED_INK,
+    )
+    axis.set(title=title, xlabel="Recall", ylabel="Precision", xlim=(0, 1), ylim=(0, 1.02))
+    axis.legend(loc="upper right")
+    return figure
+
+
+def plot_cost_curve(
+    thresholds: np.ndarray, costs: np.ndarray, chosen: float, model_label: str
+) -> Figure:
+    """Show the assumed cost per unit over the threshold and mark the chosen threshold."""
+    finite = np.isfinite(thresholds)
+    figure, axis = plt.subplots(figsize=(7, 3.8), constrained_layout=True)
+    axis.plot(thresholds[finite], costs[finite], color=GOOD_COLOR)
+    axis.axhline(costs[-1], color=MUTED_INK, linewidth=1, linestyle=":")
+    axis.annotate(
+        "flag nothing",
+        xy=(thresholds[finite].min(), costs[-1]),
+        xytext=(0, 4),
+        textcoords="offset points",
+        color=MUTED_INK,
+    )
+    if np.isfinite(chosen):
+        axis.axvline(chosen, color=FAIL_COLOR, linewidth=1, linestyle="--")
+        axis.annotate(
+            f"chosen threshold {chosen:.3f}",
+            xy=(chosen, 1),
+            xycoords=("data", "axes fraction"),
+            xytext=(4, -12),
+            textcoords="offset points",
+            color=MUTED_INK,
+        )
+    axis.set(
+        title=f"Assumed cost over threshold, out-of-fold: {model_label}",
+        xlabel="Score threshold",
+        ylabel="Cost per unit",
+    )
+    return figure
+
+
+def plot_optuna_history(studies: dict[str, optuna.Study]) -> Figure:
+    """Show every trial and the best value so far, one panel per study on a shared axis."""
+    figure, axes = plt.subplots(
+        1, len(studies), figsize=(4 * len(studies), 3.4), sharey=True, constrained_layout=True
+    )
+    for axis, (name, study) in zip(np.atleast_1d(axes), studies.items(), strict=True):
+        values = np.array([trial.value for trial in study.trials])
+        numbers = np.arange(len(values))
+        axis.scatter(numbers, values, color=GRID, edgecolor=MUTED_INK, linewidth=0.5, s=20)
+        axis.plot(numbers, np.maximum.accumulate(values), color=GOOD_COLOR, label="Best so far")
+        axis.set(title=name, xlabel="Trial")
+    np.atleast_1d(axes)[0].set_ylabel("Mean PR-AUC, temporal folds")
+    np.atleast_1d(axes)[0].legend(loc="lower right")
+    return figure
+
+
+def plot_optuna_importance(studies: dict[str, optuna.Study], n_params: int = 6) -> Figure:
+    """Show the most important hyperparameters per study by fANOVA importance."""
+    figure, axes = plt.subplots(
+        1, len(studies), figsize=(4.4 * len(studies), 3.4), constrained_layout=True
+    )
+    for axis, (name, study) in zip(np.atleast_1d(axes), studies.items(), strict=True):
+        importance = optuna.importance.get_param_importances(
+            study, evaluator=optuna.importance.FanovaImportanceEvaluator(seed=SEED)
+        )
+        top = list(importance.items())[:n_params][::-1]
+        axis.barh([key for key, _ in top], [value for _, value in top], color=GOOD_COLOR)
+        axis.grid(axis="y", visible=False)
+        axis.set(title=name, xlabel="Importance")
     return figure
