@@ -1,0 +1,28 @@
+{
+  "candidate_comparison": [
+    {
+      "model": "dummy",
+      "imbalance": "none",
+      "pr_auc_temporal_mean": 0.05550239234449761,
+      "pr_auc_temporal_std": 0.03549710428897877,
+      "pr_auc_shuffled_mean": 0.06937689243027888,
+      "pr_auc_shuffled_std": 0.0019101075823147419
+    },
+    {
+      "model": "logreg",
+      "imbalance": "none",
+      "pr_auc_temporal_mean": 0.1272733976996551,
+      "pr_auc_temporal_std": 0.07337261139228393,
+      "pr_auc_shuffled_mean": 0.1497919400763612,
+      "pr_auc_shuffled_std": 0.03232982730554631
+    },
+    {
+      "model": "logreg",
+      "imbalance": "weighted",
+      "pr_auc_temporal_mean": 0.10955484104049266,
+      "pr_auc_temporal_std": 0.0588751265142308,
+      "pr_auc_shuffled_mean": 0.15240655008475432,
+      "pr_auc_shuffled_std": 0.03903173391511621
+    }
+  ]
+}
