@@ -1,6 +1,7 @@
 """Write experiment tables to reports/ so that no result is ever typed by hand."""
 
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -42,3 +43,25 @@ def write_results(
     (directory / RESULTS_JSON).write_text(
         json.dumps(data, indent=2, default=str) + "\n", encoding="utf-8"
     )
+
+
+def parse_sections(markdown: str) -> dict[str, str]:
+    """Split a results.md document into its second-level sections."""
+    parts = re.split(r"^## (.+)$", markdown, flags=re.MULTILINE)
+    return {
+        title.strip(): content.strip()
+        for title, content in zip(parts[1::2], parts[2::2], strict=True)
+    }
+
+
+def inject_sections(document: str, sections: dict[str, str]) -> str:
+    """Replace each block between BEGIN and END markers with the section of the same title."""
+
+    def replacement(match: re.Match[str]) -> str:
+        title = match.group(1)
+        if title not in sections:
+            raise KeyError(f"No section named {title!r} in the results")
+        return f"<!-- BEGIN: {title} -->\n{sections[title]}\n<!-- END: {title} -->"
+
+    pattern = re.compile(r"<!-- BEGIN: (.+?) -->.*?<!-- END: \1 -->", flags=re.DOTALL)
+    return pattern.sub(replacement, document)
