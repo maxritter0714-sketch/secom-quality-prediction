@@ -3,8 +3,9 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pytest
 
-from secom.reporting import markdown_table, write_results
+from secom.reporting import inject_sections, markdown_table, parse_sections, write_results
 
 
 def test_markdown_table_formats_floats_and_missing_values() -> None:
@@ -22,3 +23,17 @@ def test_write_results_creates_both_files(tmp_path: Path) -> None:
 
     assert "## Title" in (tmp_path / "results.md").read_text(encoding="utf-8")
     assert json.loads((tmp_path / "results.json").read_text(encoding="utf-8")) == {"value": 1}
+
+
+def test_sections_are_injected_between_markers() -> None:
+    sections = parse_sections("# Title\n\n## First\n\nnew table\n\n## Second\n\nother\n")
+    document = "intro\n<!-- BEGIN: First -->\nold\n<!-- END: First -->\noutro"
+
+    assert inject_sections(document, sections) == (
+        "intro\n<!-- BEGIN: First -->\nnew table\n<!-- END: First -->\noutro"
+    )
+
+
+def test_marker_without_a_matching_section_is_an_error() -> None:
+    with pytest.raises(KeyError, match="Missing"):
+        inject_sections("<!-- BEGIN: Missing -->x<!-- END: Missing -->", {})
