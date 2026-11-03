@@ -1,0 +1,24 @@
+# Data is downloaded by scripts/download_data.py and never committed
+data/*
+!data/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+
+# Tool caches
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Run artefacts that can be recreated by run_experiments.py
+artifacts/
+
+# Local environment and secrets
+.env
+.DS_Store
+Thumbs.db
