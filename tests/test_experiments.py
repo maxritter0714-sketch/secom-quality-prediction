@@ -5,6 +5,7 @@ import pytest
 from secom.experiments import (
     build_variants,
     evaluate_holdout,
+    holdout_summary,
     reference_costs,
     run_detectors,
     select_best_tree_variant,
@@ -65,3 +66,31 @@ def test_reference_costs_by_hand() -> None:
     table = reference_costs(pd.Series([0, 0, 0, 1]))
 
     assert table["cost_per_unit"].tolist() == pytest.approx([10 / 4, 3 / 4])
+
+
+def test_holdout_summary_formats_intervals_and_confusion_counts() -> None:
+    table = pd.DataFrame(
+        {
+            "model": ["m"],
+            "cv_pr_auc": [0.2],
+            "test_pr_auc": [0.1],
+            "test_pr_auc_ci_low": [0.05],
+            "test_pr_auc_ci_high": [0.3],
+            "roc_auc": [0.6],
+            "recall_at_precision_0.5": [0.0],
+            "balanced_accuracy": [0.5],
+            "cost_per_unit": [0.4],
+            "cost_ci_low": [0.2],
+            "cost_ci_high": [0.7],
+            "tp": [1],
+            "fp": [2],
+            "fn": [3],
+            "tn": [4],
+        }
+    )
+
+    summary = holdout_summary(table).iloc[0]
+
+    assert summary["PR-AUC (hold-out, 95% CI)"] == "0.100 [0.050, 0.300]"
+    assert summary["Cost per unit (95% CI)"] == "0.400 [0.200, 0.700]"
+    assert summary["TP / FP / FN / TN"] == "1 / 2 / 3 / 4"
