@@ -23,6 +23,62 @@
       "pr_auc_temporal_std": 0.0588751265142308,
       "pr_auc_shuffled_mean": 0.15240655008475432,
       "pr_auc_shuffled_std": 0.03903173391511621
+    },
+    {
+      "model": "logreg",
+      "imbalance": "smote",
+      "pr_auc_temporal_mean": 0.11969249218534975,
+      "pr_auc_temporal_std": 0.06503482248737111,
+      "pr_auc_shuffled_mean": 0.1564379889959903,
+      "pr_auc_shuffled_std": 0.04189956751958501
+    },
+    {
+      "model": "random_forest",
+      "imbalance": "none",
+      "pr_auc_temporal_mean": 0.12799781812819383,
+      "pr_auc_temporal_std": 0.07732648746006665,
+      "pr_auc_shuffled_mean": 0.18947488534245796,
+      "pr_auc_shuffled_std": 0.04032210361330908
+    },
+    {
+      "model": "random_forest",
+      "imbalance": "weighted",
+      "pr_auc_temporal_mean": 0.16416984030225698,
+      "pr_auc_temporal_std": 0.15145864779469703,
+      "pr_auc_shuffled_mean": 0.22865772271253007,
+      "pr_auc_shuffled_std": 0.07514592096994802
+    },
+    {
+      "model": "random_forest",
+      "imbalance": "smote",
+      "pr_auc_temporal_mean": 0.17371268301488865,
+      "pr_auc_temporal_std": 0.17456183028632416,
+      "pr_auc_shuffled_mean": 0.19636584963319098,
+      "pr_auc_shuffled_std": 0.07644959812155705
+    },
+    {
+      "model": "lightgbm",
+      "imbalance": "none",
+      "pr_auc_temporal_mean": 0.15637215317704245,
+      "pr_auc_temporal_std": 0.024349355131063507,
+      "pr_auc_shuffled_mean": 0.2105764067336785,
+      "pr_auc_shuffled_std": 0.05944596148203101
+    },
+    {
+      "model": "lightgbm",
+      "imbalance": "weighted",
+      "pr_auc_temporal_mean": 0.18241913304509577,
+      "pr_auc_temporal_std": 0.07097173354722484,
+      "pr_auc_shuffled_mean": 0.2081768380903646,
+      "pr_auc_shuffled_std": 0.06424427552641267
+    },
+    {
+      "model": "lightgbm",
+      "imbalance": "smote",
+      "pr_auc_temporal_mean": 0.17397692490399294,
+      "pr_auc_temporal_std": 0.12454943534968589,
+      "pr_auc_shuffled_mean": 0.2002186258605987,
+      "pr_auc_shuffled_std": 0.07800429862779176
     }
   ]
 }
