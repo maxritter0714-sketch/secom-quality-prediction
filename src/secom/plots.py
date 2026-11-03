@@ -188,9 +188,10 @@ def plot_pr_curves(curves: dict[str, tuple[np.ndarray, np.ndarray]], title: str)
     for (label, (labels, scores)), color in zip(curves.items(), SERIES, strict=False):
         precision, recall, _ = precision_recall_curve(labels, scores)
         average_precision = average_precision_score(labels, scores)
+        # The curve's final point (recall 0, precision 1) is a convention, not an observation.
         axis.step(
-            recall,
-            precision,
+            recall[:-1],
+            precision[:-1],
             where="post",
             color=color,
             label=f"{label}, AP = {average_precision:.3f}",
