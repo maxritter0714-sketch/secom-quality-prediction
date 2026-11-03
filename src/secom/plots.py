@@ -148,3 +148,31 @@ def plot_feature_distributions(features: pd.DataFrame, labels: pd.Series) -> Fig
     for axis in axes.flat[len(columns) :]:
         axis.set_visible(False)
     return figure
+
+
+def plot_candidate_comparison(comparison: pd.DataFrame) -> Figure:
+    """Compare temporal and shuffled CV scores per candidate on one shared axis."""
+    labels = (comparison["model"] + " / " + comparison["imbalance"]).tolist()[::-1]
+    positions = range(len(labels))
+    figure, axis = plt.subplots(figsize=(8, 0.42 * len(labels) + 1.4), constrained_layout=True)
+    series = (
+        ("pr_auc_temporal_mean", GOOD_COLOR, "o", "Temporal folds"),
+        ("pr_auc_shuffled_mean", FAIL_COLOR, "s", "Shuffled folds"),
+    )
+    for column, color, marker, label in series:
+        axis.scatter(
+            comparison[column].to_numpy()[::-1],
+            positions,
+            color=color,
+            marker=marker,
+            s=60,
+            edgecolor=SURFACE,
+            linewidth=1,
+            label=label,
+            zorder=3,
+        )
+    axis.set_yticks(list(positions), labels)
+    axis.grid(axis="y", visible=False)
+    axis.set(title="Mean PR-AUC in cross-validation (training period)", xlabel="PR-AUC")
+    axis.legend(loc="lower right")
+    return figure
